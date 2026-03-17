@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Space Invaders</title>
+  <style>
+    body { text-align: center; background: black; color: white; }
+    canvas { background: #111; }
+  </style>
+</head>
+<body>
+
+<h1>Space Invaders</h1>
+<canvas id="gameCanvas" width="400" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Player
+let player = { x: 180, y: 450, width: 40, height: 20 };
+
+// Bullet
+let bullets = [];
+
+// Enemies
+let enemies = [];
+for (let i = 0; i < 5; i++) {
+  enemies.push({ x: i * 70 + 30, y: 50, width: 30, height: 20 });
+}
+
+// Controls
+let left = false, right = false;
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") left = true;
+  if (e.key === "ArrowRight") right = true;
+  if (e.key === " ") bullets.push({ x: player.x + 18, y: player.y });
+});
+
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft") left = false;
+  if (e.key === "ArrowRight") right = false;
+});
+
+// Game loop
+function update() {
+  if (left) player.x -= 5;
+  if (right) player.x += 5;
+
+  bullets.forEach(b => b.y -= 5);
+
+  // Collision
+  bullets.forEach((b, bi) => {
+    enemies.forEach((e, ei) => {
+      if (
+        b.x < e.x + e.width &&
+        b.x + 5 > e.x &&
+        b.y < e.y + e.height &&
+        b.y + 10 > e.y
+      ) {
+        enemies.splice(ei, 1);
+        bullets.splice(bi, 1);
+      }
+    });
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Player
+  ctx.fillStyle = "lime";
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+
+  // Bullets
+  ctx.fillStyle = "yellow";
+  bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
+
+  // Enemies
+  ctx.fillStyle = "red";
+  enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
