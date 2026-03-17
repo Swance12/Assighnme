@@ -19,7 +19,7 @@ const ctx = canvas.getContext("2d");
 // Player
 let player = { x: 180, y: 450, width: 40, height: 20 };
 
-// Bullet
+// Bullets
 let bullets = [];
 
 // Enemies
@@ -31,10 +31,16 @@ for (let i = 0; i < 5; i++) {
 // Controls
 let left = false, right = false;
 
+// Game state
+let gameOver = false;
+let win = false;
+
 document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") left = true;
   if (e.key === "ArrowRight") right = true;
-  if (e.key === " ") bullets.push({ x: player.x + 18, y: player.y });
+  if (e.key === " " && !gameOver) {
+    bullets.push({ x: player.x + 18, y: player.y });
+  }
 });
 
 document.addEventListener("keyup", e => {
@@ -42,14 +48,15 @@ document.addEventListener("keyup", e => {
   if (e.key === "ArrowRight") right = false;
 });
 
-// Game loop
+// Update game
 function update() {
-  if (left) player.x -= 5;
-  if (right) player.x += 5;
+  if (left && player.x > 0) player.x -= 5;
+  if (right && player.x < canvas.width - player.width) player.x += 5;
 
+  // Move bullets
   bullets.forEach(b => b.y -= 5);
 
-  // Collision
+  // Collision detection
   bullets.forEach((b, bi) => {
     enemies.forEach((e, ei) => {
       if (
@@ -63,8 +70,15 @@ function update() {
       }
     });
   });
+
+  // WIN CONDITION
+  if (enemies.length === 0) {
+    win = true;
+    gameOver = true;
+  }
 }
 
+// Draw everything
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -79,10 +93,20 @@ function draw() {
   // Enemies
   ctx.fillStyle = "red";
   enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+
+  // WIN SCREEN
+  if (win) {
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("YOU WIN 🎉", 110, 250);
+  }
 }
 
+// Game loop
 function gameLoop() {
-  update();
+  if (!gameOver) {
+    update();
+  }
   draw();
   requestAnimationFrame(gameLoop);
 }
